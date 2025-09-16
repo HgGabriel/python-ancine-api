@@ -1,0 +1,26 @@
+# app.yaml
+
+# O runtime do App Engine. Python 3.10 ou superior é recomendado.
+runtime: python312
+
+# A linha abaixo especifica que a sua aplicação será executada
+# por um servidor Gunicorn.
+# O comando 'gunicorn' roda a sua API e a 'app:app' diz para ele
+# que o objeto Flask se chama 'app' e está no arquivo 'app.py'.
+# Se você está usando 'run.py', você deve ajustar para 'run:app'
+# conforme a sua estrutura.
+entrypoint: gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 run:app
+
+# Define o ambiente como App Engine Standard
+# Você não precisa se preocupar com a infraestrutura
+service: default
+env: standard
+instance_class: F1
+
+# Define o escalonamento, que é gratuito e automático
+automatic_scaling:
+  min_instances: 0
+  max_instances: 1
+  min_idle_instances: automatic
+  max_idle_instances: automatic
+  max_concurrent_requests: 80

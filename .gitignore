@@ -1,0 +1,70 @@
+# --- Python & Virtual Environments ---
+# Compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Egg & distribution folders
+.eggs/
+*.egg-info/
+*.egg
+dist/
+build/
+wheels/
+sdist/
+
+# Virtual environment folders
+venv/
+env/
+.venv/
+.env/
+
+# --- IDE & Editor Specific ---
+# VSCode
+.vscode/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# --- Flask Specific ---
+# The instance folder contains sensitive configuration and secrets
+# that should not be in version control.
+instance/
+
+# Local databases used for development
+*.sqlite3
+*.db
+
+# --- Google Cloud & Firebase ---
+# IMPORTANT: Never commit service account keys or secret files!
+*.json
+*.pem
+
+# Google Cloud SDK and configuration files
+.gcloud/
+app.yaml.bak
+appengine-generated/
+
+# Firebase CLI files and logs
+.firebase/
+firebase-debug.log
+
+# --- Secrets & Environment Variables ---
+# Environment variables file
+.env
+.env.*
+
+# --- Testing & Logs ---
+# Test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Log files
+*.log
+*.log.*
