@@ -1,3 +1,15 @@
-Flask
-firebase-admin
+# Servidor de Produção
 gunicorn
+
+# Framework da API
+Flask
+Flask-Cors
+
+# Cliente do Supabase
+supabase
+
+# Bibliotecas dos Scripts (embora não sejam usadas pela API,
+# tê-las aqui não faz mal, mas o Gunicorn, Flask e Supabase são essenciais)
+pandas
+tqdm
+python-dotenv
