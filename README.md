@@ -6,6 +6,12 @@
 
 **Base URL:** `https://genuine-flight-472304-e1.rj.r.appspot.com/api/v1/`
 
+## 🌐 Links Importantes
+
+- **📖 Documentação Interativa (Swagger UI):** [https://genuine-flight-472304-e1.rj.r.appspot.com/docs/](https://genuine-flight-472304-e1.rj.r.appspot.com/docs/)
+- **📊 Dashboard de Visualização:** [https://ancine-viz-brasil.vercel.app/](https://ancine-viz-brasil.vercel.app/)
+- **📄 Especificação OpenAPI:** [https://genuine-flight-472304-e1.rj.r.appspot.com/apispec.json](https://genuine-flight-472304-e1.rj.r.appspot.com/apispec.json)
+
 ---
 
 ## 🎯 Objetivo do Projeto
@@ -18,6 +24,12 @@ Esta API serve como um **gateway de transparência**, possibilitando que:
 - Desenvolvedores criem dashboards e aplicações dinâmicas;
 - Analistas de dados explorem padrões do setor audiovisual;
 - O público compreenda a dinâmica e impacto econômico do cinema nacional.
+
+### 🎨 Interface e Ferramentas Disponíveis
+
+- **📖 Documentação Swagger**: Interface interativa completa para explorar e testar todos os endpoints da API
+- **📊 Dashboard de Visualização**: Frontend dedicado com gráficos e análises visuais dos dados cinematográficos brasileiros
+- **🔧 API RESTful**: Endpoints organizados por domínios (Exibição, Produção, Distribuição, KPIs)
 
 ---
 
@@ -597,6 +609,45 @@ curl "https://genuine-flight-472304-e1.rj.r.appspot.com/api/v1/obras/pesquisa?pa
 ```bash
 curl "https://genuine-flight-472304-e1.rj.r.appspot.com/api/v1/lancamentos/pesquisa?distribuidoras.razao_social_distribuidora=DISNEY&ano_lancamento=2023"
 ```
+
+---
+
+## 📖 Documentação Interativa
+
+A API possui uma **interface Swagger UI completa** que permite:
+
+- **🔍 Explorar todos os endpoints** organizados por categorias
+- **🧪 Testar requisições diretamente** no navegador
+- **📋 Visualizar schemas detalhados** de requisições e respostas
+- **📝 Copiar comandos cURL** automaticamente
+- **🏷️ Filtrar por tags** (Exibição, Produção, Distribuição, KPIs)
+
+**Acesse:** [https://genuine-flight-472304-e1.rj.r.appspot.com/docs/](https://genuine-flight-472304-e1.rj.r.appspot.com/docs/)
+
+### Funcionalidades da Documentação
+
+- **Try it out**: Teste qualquer endpoint com parâmetros personalizados
+- **Schemas interativos**: Explore estruturas de dados aninhadas
+- **Filtros aninhados**: Documentação completa de filtros como `complexos.uf_complexo`
+- **Exemplos práticos**: Valores de exemplo para todos os parâmetros
+
+---
+
+## 📊 Dashboard de Visualização
+
+Desenvolvemos um **frontend dedicado** para visualização dos dados da API em formato de dashboard interativo:
+
+**🔗 Acesse:** [https://ancine-viz-brasil.vercel.app/](https://ancine-viz-brasil.vercel.app/)
+
+### Recursos do Dashboard
+
+- **📈 Gráficos Interativos**: Visualizações dinâmicas dos dados cinematográficos
+- **🗺️ Análises Geográficas**: Distribuição de salas e produção por estado
+- **📊 KPIs do Setor**: Market share, ranking de distribuidoras e estatísticas
+- **🎬 Insights Visuais**: Tendências da produção e exibição cinematográfica brasileira
+- **📱 Interface Responsiva**: Otimizado para desktop e dispositivos móveis
+
+O dashboard consome diretamente os dados desta API, oferecendo uma experiência visual intuitiva para explorar o ecossistema cinematográfico brasileiro.
 
 ---
 

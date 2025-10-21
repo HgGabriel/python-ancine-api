@@ -4,6 +4,7 @@ gunicorn
 # Framework da API
 Flask
 Flask-Cors
+flasgger
 
 # Cliente do Supabase
 supabase
