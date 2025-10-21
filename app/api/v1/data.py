@@ -13,8 +13,63 @@ CORS(data_bp)
 @data_bp.route('/data/<string:table_name>', methods=['GET'])
 def get_table_cursor(table_name):
     """
-    ENDPOINT GENÉRICO Otimizado com Paginação Baseada em Cursor (Keyset).
-    Agora inclui as novas tabelas.
+    Acesso direto a tabelas individuais com paginação
+    ---
+    tags:
+      - Acesso Direto
+    summary: Busca dados de uma tabela específica sem relacionamentos.
+    description: >
+      Endpoint genérico que permite acesso direto aos dados de qualquer tabela do sistema.
+      Retorna dados "planos" (sem JOINs) com paginação baseada em cursor para performance otimizada.
+      Ideal para análises que precisam apenas dos dados de uma entidade específica.
+    parameters:
+      - in: path
+        name: table_name
+        required: true
+        schema:
+          type: string
+          enum: ['exibidores', 'complexos', 'salas', 'obras', 'paises_origem', 'distribuidoras', 'lancamentos']
+        description: Nome da tabela a ser consultada.
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+          maximum: 100
+        description: Número de itens por página.
+      - in: query
+        name: last_id
+        schema:
+          type: string
+        description: Cursor da página anterior (usar a chave primária do último item).
+    responses:
+      200:
+        description: Lista paginada de registros da tabela solicitada.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    description: Estrutura varia conforme a tabela solicitada.
+                pagination:
+                  type: object
+                  properties:
+                    total_filtered_count:
+                      type: integer
+                    per_page:
+                      type: integer
+                    next_cursor:
+                      type: string
+                    has_next:
+                      type: boolean
+      400:
+        description: Nome de tabela inválido.
+      500:
+        description: Erro interno do servidor.
     """
     if supabase is None:
         return jsonify({'error': 'Serviço Supabase não está disponível.'}), 503
@@ -99,8 +154,140 @@ def get_table_cursor(table_name):
 @data_bp.route('/pesquisa-salas', methods=['GET'])
 def get_salas_com_joins():
     """
-    ENDPOINT PODEROSO (Salas): Busca 'salas' com JOINs
-    em 'complexos' e 'exibidores'.
+    Busca detalhada de Salas de Cinema
+    ---
+    tags:
+      - Exibição
+    summary: Busca salas de cinema com dados aninhados de complexos e exibidores.
+    description: >
+      Retorna uma lista paginada de salas de cinema. Cada sala na resposta contém
+      um objeto aninhado `complexos`, que por sua vez contém um objeto aninhado `exibidores`.
+      Permite filtros avançados em campos das tabelas relacionadas, ideal para análises
+      geográficas e de infraestrutura de exibição.
+    parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+          maximum: 100
+        description: Número de itens por página.
+      - in: query
+        name: last_id
+        schema:
+          type: string
+        description: O cursor da página anterior (usar o `registro_sala`).
+      - in: query
+        name: situacao_sala
+        schema:
+          type: string
+          enum: ['Em Funcionamento', 'Fechado', 'Em Construção', 'Reformando']
+          example: 'Em Funcionamento'
+        description: Filtra pela situação operacional da sala.
+      - in: query
+        name: tipo_tela
+        schema:
+          type: string
+          example: '2D'
+        description: Filtra por tecnologia de projeção (2D, 3D, IMAX, etc.).
+      - in: query
+        name: tipo_som
+        schema:
+          type: string
+          example: 'DOLBY DIGITAL'
+        description: Filtra por sistema de áudio.
+      - in: query
+        name: complexos.uf_complexo
+        schema:
+          type: string
+          example: 'SP'
+        description: (Filtro Aninhado) Filtra por salas localizadas num estado (UF) específico.
+      - in: query
+        name: complexos.municipio_complexo
+        schema:
+          type: string
+          example: 'São Paulo'
+        description: (Filtro Aninhado) Filtra por salas localizadas numa cidade específica.
+      - in: query
+        name: complexos.exibidores.nome_grupo_exibidor
+        schema:
+          type: string
+          example: 'CINEMARK'
+        description: (Filtro Aninhado) Filtra por salas pertencentes a um grupo exibidor.
+    responses:
+      200:
+        description: Uma lista paginada de salas com dados aninhados.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      registro_sala:
+                        type: string
+                        description: Identificador único da sala
+                      nome_sala:
+                        type: string
+                        description: Nome oficial da sala
+                      situacao_sala:
+                        type: string
+                        description: Situação operacional
+                      tipo_tela:
+                        type: string
+                        description: Tecnologia de projeção
+                      tipo_som:
+                        type: string
+                        description: Sistema de áudio
+                      poltronas:
+                        type: integer
+                        description: Número de assentos
+                      complexos:
+                        type: object
+                        properties:
+                          registro_complexo:
+                            type: string
+                            description: Identificador único do complexo
+                          nome_complexo:
+                            type: string
+                            description: Nome do complexo/shopping
+                          uf_complexo:
+                            type: string
+                            description: Unidade federativa
+                          municipio_complexo:
+                            type: string
+                            description: Município
+                          endereco_complexo:
+                            type: string
+                            description: Endereço completo
+                          exibidores:
+                            type: object
+                            properties:
+                              registro_exibidor:
+                                type: string
+                                description: Identificador único do exibidor
+                              nome_grupo_exibidor:
+                                type: string
+                                description: Nome do grupo empresarial
+                              cnpj_exibidor:
+                                type: string
+                                description: CNPJ da empresa
+                pagination:
+                  type: object
+                  properties:
+                    total_filtered_count:
+                      type: integer
+                    per_page:
+                      type: integer
+                    next_cursor:
+                      type: string
+                    has_next:
+                      type: boolean
+      500:
+        description: Erro interno do servidor.
     """
     if supabase is None:
         return jsonify({'error': 'Serviço Supabase não está disponível.'}), 503
@@ -161,8 +348,124 @@ def get_salas_com_joins():
 @data_bp.route('/pesquisa-obras', methods=['GET'])
 def get_obras_com_joins():
     """
-    ENDPOINT PODEROSO (Obras): Busca 'obras' e automaticamente anexa
-    a lista de 'paises_origem' (JOINs).
+    Busca detalhada de Obras Brasileiras
+    ---
+    tags:
+      - Produção
+    summary: Busca obras cinematográficas brasileiras com países de co-produção.
+    description: >
+      Retorna uma lista paginada de obras brasileiras com certificado CPB.
+      Cada obra inclui um array `paises_origem` com todos os países envolvidos na produção,
+      permitindo análises de co-produções internacionais e mapeamento da produção nacional.
+    parameters:
+      - in: query
+        name: limit
+        schema:
+          type: integer
+          default: 10
+          maximum: 100
+        description: Número de itens por página.
+      - in: query
+        name: last_id
+        schema:
+          type: string
+        description: O cursor da página anterior (usar o `cpb`).
+      - in: query
+        name: tipo_obra
+        schema:
+          type: string
+          enum: ['Longa-metragem', 'Curta-metragem', 'Documentário', 'Animação']
+          example: 'Longa-metragem'
+        description: Filtra por categoria da produção.
+      - in: query
+        name: genero
+        schema:
+          type: string
+          example: 'Drama'
+        description: Filtra por gênero cinematográfico.
+      - in: query
+        name: ano_producao
+        schema:
+          type: integer
+          example: 2023
+        description: Filtra por ano de finalização da produção.
+      - in: query
+        name: situacao
+        schema:
+          type: string
+          enum: ['Finalizada', 'Em Produção', 'Pré-produção']
+          example: 'Finalizada'
+        description: Filtra por status atual da obra.
+      - in: query
+        name: paises_origem.pais
+        schema:
+          type: string
+          example: 'França'
+        description: (Filtro Aninhado) Filtra por obras com co-produção de um país específico.
+    responses:
+      200:
+        description: Uma lista paginada de obras brasileiras com dados de co-produção.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      cpb:
+                        type: string
+                        description: Certificado de Produto Brasileiro
+                      titulo_obra:
+                        type: string
+                        description: Título oficial da obra
+                      tipo_obra:
+                        type: string
+                        description: Categoria da produção
+                      genero:
+                        type: string
+                        description: Gênero cinematográfico
+                      ano_producao:
+                        type: integer
+                        description: Ano de finalização
+                      situacao:
+                        type: string
+                        description: Status atual
+                      duracao_minutos:
+                        type: integer
+                        description: Duração em minutos
+                      sinopse:
+                        type: string
+                        description: Resumo da obra
+                      paises_origem:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: integer
+                              description: Identificador da relação
+                            pais:
+                              type: string
+                              description: Nome do país
+                            tipo_participacao:
+                              type: string
+                              description: Tipo de envolvimento
+                pagination:
+                  type: object
+                  properties:
+                    total_filtered_count:
+                      type: integer
+                    per_page:
+                      type: integer
+                    next_cursor:
+                      type: string
+                    has_next:
+                      type: boolean
+      500:
+        description: Erro interno do servidor.
     """
     if supabase is None:
         return jsonify({'error': 'Serviço Supabase não está disponível.'}), 503
@@ -231,9 +534,48 @@ def get_obras_com_joins():
 @data_bp.route('/estatisticas/salas_por_uf', methods=['GET'])
 def get_stats_salas_por_uf():
     """
-    ENDPOINT DE AGREGAÇÃO (BI): Retorna a contagem de salas 
-    agrupada por UF, direto do banco.
-    (Requer a função SQL 'contar_salas_por_uf' no Supabase)
+    Distribuição de Salas por Estado
+    ---
+    tags:
+      - KPIs
+    summary: Estatísticas de infraestrutura de exibição por UF.
+    description: >
+      Retorna dados agregados da distribuição de salas de cinema por unidade federativa.
+      Inclui contagem total de salas, poltronas e complexos por estado, permitindo
+      análises de concentração geográfica da infraestrutura cinematográfica brasileira.
+    responses:
+      200:
+        description: Estatísticas de salas agrupadas por UF.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  uf_complexo:
+                    type: string
+                    description: Unidade federativa
+                    example: 'SP'
+                  total_salas:
+                    type: integer
+                    description: Número total de salas no estado
+                    example: 1250
+                  total_poltronas:
+                    type: integer
+                    description: Capacidade total de assentos
+                    example: 180000
+                  media_poltronas_por_sala:
+                    type: number
+                    format: float
+                    description: Média de poltronas por sala
+                    example: 144.5
+                  total_complexos:
+                    type: integer
+                    description: Número de complexos cinematográficos
+                    example: 85
+      500:
+        description: Erro interno do servidor.
     """
     if supabase is None:
         return jsonify({'error': 'Serviço Supabase não está disponível.'}), 503
@@ -250,9 +592,40 @@ def get_stats_salas_por_uf():
 @data_bp.route('/estatisticas/obras_por_tipo', methods=['GET'])
 def get_stats_obras_por_tipo():
     """
-    ENDPOINT DE AGREGAÇÃO (BI): Retorna a contagem de obras 
-    agrupada por tipo, direto do banco.
-    (Requer a função SQL 'contar_obras_por_tipo' no Supabase)
+    Distribuição de Obras por Categoria
+    ---
+    tags:
+      - KPIs
+    summary: Estatísticas da produção brasileira por tipo de obra.
+    description: >
+      Retorna dados agregados da produção cinematográfica brasileira agrupados por categoria.
+      Inclui contagem total e duração média por tipo (longa-metragem, curta-metragem, etc.),
+      permitindo análises do perfil da produção nacional.
+    responses:
+      200:
+        description: Estatísticas de obras agrupadas por tipo.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  tipo_obra:
+                    type: string
+                    description: Categoria da produção
+                    example: 'Longa-metragem'
+                  total_obras:
+                    type: integer
+                    description: Número total de obras do tipo
+                    example: 450
+                  duracao_media:
+                    type: number
+                    format: float
+                    description: Duração média em minutos
+                    example: 105.5
+      500:
+        description: Erro interno do servidor.
     """
     if supabase is None:
         return jsonify({'error': 'Serviço Supabase não está disponível.'}), 503
@@ -268,6 +641,53 @@ def get_stats_obras_por_tipo():
 
 @data_bp.route('/estatisticas/market_share', methods=['GET'])
 def get_stats_market_share():
+    """
+    Market Share do Cinema Nacional
+    ---
+    tags:
+      - KPIs
+    summary: Participação do cinema brasileiro no mercado nacional.
+    description: >
+      Calcula o percentual de público e renda do cinema nacional versus estrangeiro.
+      Agrupa lançamentos por origem (CPB para brasileiros, ROE para estrangeiros) e
+      retorna métricas comparativas essenciais para análise de mercado.
+    responses:
+      200:
+        description: Dados de market share nacional vs estrangeiro.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  tipo:
+                    type: string
+                    enum: ['Nacional', 'Estrangeiro']
+                    description: Origem da produção
+                    example: 'Nacional'
+                  publico_total:
+                    type: integer
+                    description: Número total de espectadores
+                    example: 15000000
+                  renda_total:
+                    type: number
+                    format: decimal
+                    description: Receita total em reais
+                    example: 180000000.00
+                  percentual_publico:
+                    type: number
+                    format: float
+                    description: Percentual do público total
+                    example: 12.50
+                  percentual_renda:
+                    type: number
+                    format: float
+                    description: Percentual da renda total
+                    example: 8.75
+      500:
+        description: Erro interno do servidor.
+    """
     try:
         response = supabase.rpc('calcular_market_share_nacional').execute()
         return jsonify(response.data)
@@ -276,6 +696,50 @@ def get_stats_market_share():
     
 @data_bp.route('/estatisticas/ranking_distribuidoras', methods=['GET'])
 def get_stats_ranking_distribuidoras():
+    """
+    Ranking de Distribuidoras por Bilheteria
+    ---
+    tags:
+      - KPIs
+    summary: Distribuidoras com maior desempenho comercial.
+    description: >
+      Lista as distribuidoras ordenadas por receita total, incluindo métricas de
+      público, número de lançamentos e público médio por filme. Essencial para
+      análises de concentração de mercado e performance das distribuidoras.
+    responses:
+      200:
+        description: Ranking de distribuidoras por performance comercial.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  razao_social_distribuidora:
+                    type: string
+                    description: Nome da empresa distribuidora
+                    example: 'DISNEY'
+                  publico_total:
+                    type: integer
+                    description: Público total acumulado
+                    example: 45000000
+                  renda_total:
+                    type: number
+                    format: decimal
+                    description: Receita total em reais
+                    example: 850000000.00
+                  total_lancamentos:
+                    type: integer
+                    description: Número de filmes lançados
+                    example: 12
+                  publico_medio_por_filme:
+                    type: integer
+                    description: Público médio por lançamento
+                    example: 3750000
+      500:
+        description: Erro interno do servidor.
+    """
     try:
         response = supabase.rpc('ranking_distribuidoras').execute()
         return jsonify(response.data)
